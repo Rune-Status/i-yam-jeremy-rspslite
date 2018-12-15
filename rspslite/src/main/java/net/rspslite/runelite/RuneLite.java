@@ -1,5 +1,8 @@
 package net.rspslite.runelite;
 
+import java.io.IOException;
+import org.json.JSONException;
+import net.rspslite.localstorage.LocalStorage;
 import net.rspslite.runelite.download.DownloadManager;
 import net.rspslite.runelite.github.GitHubReleaseManager;
 
@@ -9,18 +12,26 @@ import net.rspslite.runelite.github.GitHubReleaseManager;
 public class RuneLite {
 
   public static void start() {
-    DownloadManager.downloadIfNecessary();
+    try {
+      DownloadManager.downloadIfNecessary();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
-  private static String getLocalVersion() {
-    return "TODO";
+  public static String getLocalVersion() {
+    return LocalStorage.getLocalData("launcher_version");
   }
 
-  private static String getRemoteVersion() {
+  public static void setLocalVersion(String version) {
+    LocalStorage.setLocalData("launcher_version", version);
+  }
+
+  public static String getRemoteVersion() throws IOException, JSONException {
     return GitHubReleaseManager.getLatestVersion();
   }
 
-  public static boolean isUpToDate() {
+  public static boolean isUpToDate() throws IOException {
     return getRemoteVersion().equals(getLocalVersion());
   }
 
