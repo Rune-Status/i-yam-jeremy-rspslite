@@ -1,11 +1,13 @@
 package net.rspslite;
 
+import net.rspslite.runelite.RuneLite;
+
 /**
  * Hello world!
  *
  */
 public class RSPSLite {
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        RuneLite.start();
     }
 }
