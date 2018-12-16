@@ -12,7 +12,7 @@ public class Client {
     try {
       JarInjector.inject(clientJarPath,
                          tmpInjectedJarPath,
-                         ClientInjector.getInjectors("TODO RSPS CLIENT URL", "TODO RSPS CLIENT MAIN CLASS"),
+                         ClientInjector.getInjectors("http://localhost:8080/dawntained_client.jar", "org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"),
                          jarDependencies,
                          (name) -> name.equals("META-INF/MANIFEST.MF"));
 

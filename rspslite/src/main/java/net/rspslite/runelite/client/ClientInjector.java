@@ -19,7 +19,7 @@ public class ClientInjector {
 
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
 
-    /*injectors.put("net.runelite.client.rs.RSConfig", (cc) -> {
+    injectors.put("net.runelite.client.rs.RSConfig", (cc) -> {
       try {
 
         CtMethod getCodeBase = cc.getDeclaredMethod("getCodeBase", new CtClass[]{});
@@ -35,14 +35,15 @@ public class ClientInjector {
         System.err.println("Unable to apply injector to " + cc.getName() + ". Skipping");
         e.printStackTrace();
       }
-    });*/
+    });
 
     injectors.put("net.runelite.client.rs.ClientLoader", (cc) -> {
       try {
 
+        // Skip patching of OSRS client (because patching will fail because we are not using the OSRS client)
         CtMethod load = cc.getDeclaredMethod("load");
-        load.insertBefore("System.out.println(\"Hello\");");
-        System.out.println("FOUND LOAD METHOD ON RUNELITE CLIENT");
+        load.insertAt(150, "updateCheckMode = net.runelite.client.rs.ClientUpdateCheckMode.NONE;");
+        load.insertAt(178, "updateCheckMode = net.runelite.client.rs.ClientUpdateCheckMode.AUTO;");
 
       } catch (NotFoundException | CannotCompileException e) {
         System.err.println("Unable to apply injector to " + cc.getName() + ". Skipping");
