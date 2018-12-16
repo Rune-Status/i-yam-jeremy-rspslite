@@ -40,26 +40,13 @@ public class LauncherInjector {
 
         });
 
-        getBootstrap.insertBefore("net.rspslite.runelite.launcher.LauncherInjector.testMethod();");
-
-
         // Disable artifact JAR verification
         CtMethod verifyJarHashes = cc.getDeclaredMethod("verifyJarHashes", new CtClass[]{cp.get("net.runelite.launcher.beans.Artifact[]")});
         verifyJarHashes.insertBefore("return;");
 
         // Replace RuneLite client with injected Runelite client
         CtMethod download = cc.getDeclaredMethod("download", new CtClass[]{cp.get("net.runelite.launcher.LauncherFrame"), cp.get("net.runelite.launcher.beans.Bootstrap")});
-        download.instrument(new ExprEditor() {
-
-            @Override
-            public void edit(MethodCall m) throws CannotCompileException {
-              if (m.getMethodName().equals("getPath")) {
-                System.out.println("Replace getPath()");
-                m.replace("String path = $proceed($$); $_ = path.startsWith(\"http://repo.runelite.net/net/runelite/client/\") ? \"TODO\" : path;");
-              }
-            }
-
-        });
+        download.insertAfter("net.runelite.launcher.beans.Artifact[] artifacts = $2.getArtifacts(); for (int i = 0; i < artifacts.length; i++) { if (artifacts[i].getPath().startsWith(\"http://repo.runelite.net/net/runelite/client/\")) { net.rspslite.runelite.client.Client.injectClient(REPO_DIR.toString() + java.io.File.separator + artifacts[i].getName()); } }");
 
       } catch (NotFoundException | CannotCompileException e) {
         System.err.println("Unable to apply injector to " + cc.getName() + ". Skipping");
