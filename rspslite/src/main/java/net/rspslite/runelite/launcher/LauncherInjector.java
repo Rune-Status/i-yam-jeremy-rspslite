@@ -15,6 +15,10 @@ import javassist.CannotCompileException;
 
 public class LauncherInjector {
 
+  public static void testMethod() {
+    System.out.println("Test called!");
+  }
+
   public static Map<String, Consumer<CtClass>> getInjectors() {
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
 
@@ -35,6 +39,8 @@ public class LauncherInjector {
           }
 
         });
+
+        getBootstrap.insertBefore("net.rspslite.runelite.launcher.LauncherInjector.testMethod();");
 
 
         // Disable artifact JAR verification
