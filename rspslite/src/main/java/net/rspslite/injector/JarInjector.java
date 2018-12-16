@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
@@ -18,13 +19,13 @@ import javassist.NotFoundException;
 public class JarInjector {
 
   public static void inject(String inputJarPath, String outputJarPath, Map<String, Consumer<CtClass>> classInjectors) throws IOException {
-    inject(inputJarPath, outputJarPath, classInjectors, new String[]{});
+    inject(inputJarPath, outputJarPath, classInjectors, new String[]{}, (name) -> false);
   }
 
-  public static void inject(String inputJarPath, String outputJarPath, Map<String, Consumer<CtClass>> classInjectors, String[] jarDependencies) throws IOException {
+  public static void inject(String inputJarPath, String outputJarPath, Map<String, Consumer<CtClass>> classInjectors, String[] jarDependencies, Predicate<String> shouldFilterFile) throws IOException {
     ClassPool cp = readClassPool(inputJarPath, jarDependencies);
     transform(cp, classInjectors);
-    outputJar(inputJarPath, cp, outputJarPath);
+    outputJar(inputJarPath, cp, outputJarPath, shouldFilterFile);
   }
 
   private static ClassPool readClassPool(String inputJarPath, String[] jarDependencies) throws IOException {
@@ -66,9 +67,12 @@ public class JarInjector {
     }
   }
 
-  private static void outputJar(String inputJarPath, ClassPool cp, String outputJarPath) throws IOException {
+  private static void outputJar(String inputJarPath, ClassPool cp, String outputJarPath, Predicate<String> shouldFilterFile) throws IOException {
     ZipOutputStream out = new ZipOutputStream(new FileOutputStream(outputJarPath));
     mapEntries(inputJarPath, (name, data) -> {
+      if (shouldFilterFile.test(name)) {
+        return;
+      }
       if (name.endsWith(".class")) {
         String className = getClassName(name);
         try {

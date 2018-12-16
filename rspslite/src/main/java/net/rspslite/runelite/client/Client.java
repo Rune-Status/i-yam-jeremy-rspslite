@@ -12,7 +12,9 @@ public class Client {
     try {
       JarInjector.inject(clientJarPath,
                          tmpInjectedJarPath,
-                         ClientInjector.getInjectors(), jarDependencies);
+                         ClientInjector.getInjectors("TODO RSPS CLIENT URL", "TODO RSPS CLIENT MAIN CLASS"),
+                         jarDependencies,
+                         (name) -> name.equals("META-INF/MANIFEST.MF"));
 
       File clientJar = new File(clientJarPath);
       File tmpInjectedJar = new File(tmpInjectedJarPath);

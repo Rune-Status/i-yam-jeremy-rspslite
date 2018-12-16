@@ -37,7 +37,7 @@ public class Launcher {
       URLClassLoader launcherLoader = new URLClassLoader(new URL[]{launcherUrl}, Launcher.class.getClassLoader());
       Class<?> mainClass = Class.forName("net.runelite.launcher.Launcher", true, launcherLoader);
       Method main = mainClass.getDeclaredMethod("main", new Class<?>[]{String[].class});
-      main.invoke(null, new Object[]{new String[]{}});
+      main.invoke(null, new Object[]{new String[]{"--debug"}});
     } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       System.err.println("Launcher could not be started");
       e.printStackTrace();
