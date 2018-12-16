@@ -27,6 +27,7 @@ public class GitHubReleaseManager {
       JSONArray releases = new JSONArray(jsonString);
       JSONObject latestRelease = (JSONObject) releases.get(0);
       GitHubReleaseManager.latestVersion = (String) latestRelease.get("tag_name");
+      System.out.println("Found latest RuneLite launcher version: " + latestVersion);
       return GitHubReleaseManager.latestVersion;
     }
   }

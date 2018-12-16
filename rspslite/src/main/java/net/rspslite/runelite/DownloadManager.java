@@ -14,6 +14,10 @@ public class DownloadManager {
       String jarUrl = GitHubReleaseManager.getJarUrl(latestVersion);
       download(jarUrl, outputJarPath);
       RuneLite.setLocalVersion(latestVersion);
+      System.out.println("Updated RuneLite launcher to " + latestVersion);
+    }
+    else {
+      System.out.println("RuneLite launcher up to date. Skipped download");
     }
   }
 

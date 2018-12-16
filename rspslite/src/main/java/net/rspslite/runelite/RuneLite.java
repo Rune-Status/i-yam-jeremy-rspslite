@@ -19,6 +19,7 @@ public class RuneLite {
       JarInjector.inject(LAUNCHER_JAR_PATH,
                          INJECTED_LAUNCHER_JAR_PATH,
                          RuneLiteInjector.getInjectors());
+      System.out.println("Finished injecting RuneLite launcher");
     } catch (IOException e) {
       e.printStackTrace();
     }
