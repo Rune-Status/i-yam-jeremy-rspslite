@@ -13,26 +13,45 @@ import java.util.zip.ZipEntry;
 import javassist.CtClass;
 import javassist.ClassPool;
 import javassist.ByteArrayClassPath;
+import javassist.NotFoundException;
 
 public class JarInjector {
 
   public static void inject(String inputJarPath, String outputJarPath, Map<String, Consumer<CtClass>> classInjectors) throws IOException {
-    ClassPool cp = readClassPool(inputJarPath);
+    inject(inputJarPath, outputJarPath, classInjectors, new String[]{});
+  }
+
+  public static void inject(String inputJarPath, String outputJarPath, Map<String, Consumer<CtClass>> classInjectors, String[] jarDependencies) throws IOException {
+    ClassPool cp = readClassPool(inputJarPath, jarDependencies);
     transform(cp, classInjectors);
     outputJar(inputJarPath, cp, outputJarPath);
   }
 
-  private static ClassPool readClassPool(String inputJarPath) throws IOException {
+  private static ClassPool readClassPool(String inputJarPath, String[] jarDependencies) throws IOException {
     ClassPool cp = ClassPool.getDefault();
 
-    mapEntries(inputJarPath, (name, data) -> {
-      if (name.endsWith(".class")) {
-        String className = getClassName(name);
-        cp.appendClassPath(new ByteArrayClassPath(className, data));
-      }
-    });
+    addJarToClassPool(cp, inputJarPath);
+
+    for (String jarDependency : jarDependencies) {
+      addJarToClassPool(cp, jarDependency);
+    }
 
     return cp;
+  }
+
+  private static void addJarToClassPool(ClassPool cp, String jarPath) throws IOException {
+    mapEntries(jarPath, (name, data) -> {
+      if (name.endsWith(".class")) {
+        String className = getClassName(name);
+        try {
+          CtClass cc = cp.get(className);
+          // Class already exists in class pool, leave original and do nothing with the current class
+        } catch (NotFoundException e) {
+          // Class does not exist in class pool, add it
+          cp.appendClassPath(new ByteArrayClassPath(className, data));
+        }
+      }
+    });
   }
 
   private static void transform(ClassPool cp, Map<String, Consumer<CtClass>> classInjectors) {

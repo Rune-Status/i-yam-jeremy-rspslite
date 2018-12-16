@@ -15,10 +15,6 @@ import javassist.CannotCompileException;
 
 public class LauncherInjector {
 
-  public static void testMethod() {
-    System.out.println("Test called!");
-  }
-
   public static Map<String, Consumer<CtClass>> getInjectors() {
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
 
@@ -46,7 +42,7 @@ public class LauncherInjector {
 
         // Replace RuneLite client with injected Runelite client
         CtMethod download = cc.getDeclaredMethod("download", new CtClass[]{cp.get("net.runelite.launcher.LauncherFrame"), cp.get("net.runelite.launcher.beans.Bootstrap")});
-        download.insertAfter("net.runelite.launcher.beans.Artifact[] artifacts = $2.getArtifacts(); for (int i = 0; i < artifacts.length; i++) { if (artifacts[i].getPath().startsWith(\"http://repo.runelite.net/net/runelite/client/\")) { net.rspslite.runelite.client.Client.injectClient(REPO_DIR.toString() + java.io.File.separator + artifacts[i].getName()); } }");
+        download.insertAfter("net.runelite.launcher.beans.Artifact[] artifacts = $2.getArtifacts(); String[] jarDependencies = new String[artifacts.length]; String clientJarPath = null; for (int i = 0; i < artifacts.length; i++) { jarDependencies[i] = REPO_DIR.toString() + java.io.File.separator + artifacts[i].getName(); if (artifacts[i].getPath().startsWith(\"http://repo.runelite.net/net/runelite/client/\")) { clientJarPath = jarDependencies[i]; } } net.rspslite.runelite.client.Client.injectClient(clientJarPath, jarDependencies);");
 
       } catch (NotFoundException | CannotCompileException e) {
         System.err.println("Unable to apply injector to " + cc.getName() + ". Skipping");
