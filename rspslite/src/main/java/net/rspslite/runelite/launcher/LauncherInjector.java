@@ -1,4 +1,4 @@
-package net.rspslite.runelite;
+package net.rspslite.runelite.launcher;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import javassist.expr.NewExpr;
 import javassist.NotFoundException;
 import javassist.CannotCompileException;
 
-public class RuneLiteInjector {
+public class LauncherInjector {
 
   public static Map<String, Consumer<CtClass>> getInjectors() {
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();

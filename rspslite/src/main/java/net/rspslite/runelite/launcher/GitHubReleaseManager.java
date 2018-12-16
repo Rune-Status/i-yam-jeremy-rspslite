@@ -1,4 +1,4 @@
-package net.rspslite.runelite;
+package net.rspslite.runelite.launcher;
 
 import java.net.URL;
 import java.util.Scanner;

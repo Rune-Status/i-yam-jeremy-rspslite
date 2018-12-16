@@ -1,6 +1,6 @@
 package net.rspslite;
 
-import net.rspslite.runelite.RuneLite;
+import net.rspslite.runelite.launcher.Launcher;
 
 /**
  * Hello world!
@@ -8,6 +8,6 @@ import net.rspslite.runelite.RuneLite;
  */
 public class RSPSLite {
     public static void main(String[] args) {
-        RuneLite.start();
+        Launcher.start();
     }
 }
