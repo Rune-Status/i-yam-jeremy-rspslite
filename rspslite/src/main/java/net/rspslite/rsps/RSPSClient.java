@@ -2,8 +2,8 @@ package net.rspslite.rsps;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.applet.Applet;
 import net.rspslite.injector.JarInjector;
 
@@ -17,25 +17,9 @@ public class RSPSClient {
     injectClient();
 
     try {
-      Map<String, byte[]> zipData = new HashMap<>();
-      JarInjector.mapEntries(RSPS_CLIENT_JAR_PATH, (name, data) -> {
-        zipData.put(name, data);
-      });
+      URL[] jarUrls = toUrls(RSPS_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES);
 
-      ClassLoader clientLoader = new ClassLoader(RSPSClient.class.getClassLoader()) {
-
-        @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException { // mimics code from net.runelite.client.rs.ClientLoader
-          String file = name.replace(".", "/") + ".class";
-          byte[] data = zipData.get(file);
-          if (data == null) {
-            throw new ClassNotFoundException(name);
-          }
-
-          return defineClass(name, data, 0, data.length);
-        }
-
-      };
+      ClassLoader clientLoader = new URLClassLoader(jarUrls, RSPSClient.class.getClassLoader());
 
       Class<?> clientClass = clientLoader.loadClass(RSPS_CLIENT_MAIN_CLASS);
       Applet applet = (Applet) clientClass.newInstance();
@@ -45,6 +29,19 @@ public class RSPSClient {
       e.printStackTrace();
       return null;
     }
+  }
+
+  private static URL[] toUrls(String mainJarPath, String[] jarDependencies) throws IOException {
+    URL[] jarUrls = new URL[1 + jarDependencies.length];
+    jarUrls[0] = urlFromFilePath(mainJarPath);
+    for (int i = 0; i < jarDependencies.length; i++) {
+      jarUrls[1+i] = urlFromFilePath(jarDependencies[i]);
+    }
+    return jarUrls;
+  }
+
+  private static URL urlFromFilePath(String path) throws IOException {
+    return new File(path).toURI().toURL();
   }
 
   private static void injectClient() {

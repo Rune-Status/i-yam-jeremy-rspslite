@@ -18,6 +18,21 @@ public class LauncherInjector {
   public static Map<String, Consumer<CtClass>> getInjectors() {
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
 
+    injectors.put("net.runelite.launcher.ReflectionLauncher", (cc) -> {
+      try {
+        ClassPool cp = cc.getClassPool();
+
+        CtMethod launch = cc.getDeclaredMethod("launch", new CtClass[]{cp.get("java.util.List"), cp.get("java.lang.String")});
+        launch.insertBefore("net.rspslite.runelite.launcher.Launcher.launchRuneLiteClient($1, $2, net.runelite.launcher.Launcher.CLIENT_MAIN_CLASS); return;");
+
+        System.out.println("FOUND LAUNCH METHOD: " + launch);
+
+      } catch (NotFoundException | CannotCompileException e) {
+        System.err.println("Unable to apply injector to " + cc.getName() + ". Skipping");
+        e.printStackTrace();
+      }
+    });
+
     injectors.put("net.runelite.launcher.Launcher", (cc) -> {
       try {
         ClassPool cp = cc.getClassPool();

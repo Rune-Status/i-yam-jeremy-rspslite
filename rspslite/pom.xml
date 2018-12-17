@@ -8,8 +8,8 @@
   <name>rspslite</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.9</maven.compiler.source>
+    <maven.compiler.target>1.9</maven.compiler.target>
   </properties>
   <dependencies>
     <dependency>
@@ -31,6 +31,17 @@
   </dependencies>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.0</version>
+        <configuration>
+          <source>9</source>
+          <target>9</target>
+          <showWarnings>true</showWarnings>
+          <showDeprecation>false</showDeprecation>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
