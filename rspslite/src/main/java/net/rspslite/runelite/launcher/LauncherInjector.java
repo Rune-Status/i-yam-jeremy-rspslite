@@ -25,8 +25,6 @@ public class LauncherInjector {
         CtMethod launch = cc.getDeclaredMethod("launch", new CtClass[]{cp.get("java.util.List"), cp.get("java.lang.String")});
         launch.insertBefore("net.rspslite.runelite.launcher.Launcher.launchRuneLiteClient($1, $2, net.runelite.launcher.Launcher.CLIENT_MAIN_CLASS); return;");
 
-        System.out.println("FOUND LAUNCH METHOD: " + launch);
-
       } catch (NotFoundException | CannotCompileException e) {
         System.err.println("Unable to apply injector to " + cc.getName() + ". Skipping");
         e.printStackTrace();

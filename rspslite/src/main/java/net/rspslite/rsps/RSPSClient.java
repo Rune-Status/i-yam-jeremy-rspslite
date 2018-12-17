@@ -66,6 +66,7 @@ public class RSPSClient {
     }
     catch (IOException e) {
       System.err.println("RSPS client could not be injected");
+      e.printStackTrace();
       System.exit(1);
     }
   }

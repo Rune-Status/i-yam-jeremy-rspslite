@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.MalformedURLException;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 import org.json.JSONException;
@@ -61,39 +62,34 @@ public class Launcher {
     return getRemoteVersion().equals(getLocalVersion());
   }
 
-  public static void launchRuneLiteClient(List<?> jarFiles, String clientArgs, String clientMainClass) { // mimics code from net.runelite.launcher.ReflectionLauncher
-    /*URL[] jarUrls = new URL[results.size()];
+  public static void launchRuneLiteClient(List<?> jarFiles, String clientArgs, String clientMainClass) throws MalformedURLException { // mimics code from net.runelite.launcher.ReflectionLauncher
+    URL[] jarUrls = new URL[jarFiles.size()];
 		int i = 0;
-		for (File file : results)
-		{
-			log.debug("Adding jar: {}", file);
-			jarUrls[i++] = file.toURI().toURL();
+		for (Object file : jarFiles) {
+			jarUrls[i++] = ((File)file).toURI().toURL();
 		}
 
-		URLClassLoader loader = new URLClassLoader(jarUrls, null);
+		URLClassLoader loader = new URLClassLoader(jarUrls, Launcher.class.getClassLoader()); // the changed line (includes this classloader so the RuneLite client has access to all necessary classes)
 
-		UIManager.put("ClassLoader", loader); // hack for Substance
-		Thread thread = new Thread()
-		{
-			public void run()
-			{
-				try
-				{
-					Class<?> mainClass = loader.loadClass(CLIENT_MAIN_CLASS);
+		javax.swing.UIManager.put("ClassLoader", loader); // hack for Substance
+		Thread thread = new Thread() {
+			public void run() {
+				try {
+					Class<?> mainClass = loader.loadClass(clientMainClass);
 
 					Method main = mainClass.getMethod("main", String[].class);
 
 					String[] args = clientArgs != null ? clientArgs.split(" ") : new String[0];
 					main.invoke(null, (Object) args);
 				}
-				catch (Exception ex)
-				{
-					log.error("Unable to launch client", ex);
+				catch (Exception e) {
+					System.err.println("Unable to launch RuneLite client");
+          e.printStackTrace();
 				}
 			}
 		};
 		thread.setName("RuneLite");
-    thread.start();*/
+    thread.start();
   }
 
 }
