@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import net.rspslite.injector.JarInjector;
 
-public class Client {
+public class RuneLiteClient {
 
   public static void injectClient(String clientJarPath, String[] jarDependencies) {
     String tmpInjectedJarPath = clientJarPath + ".tmp";
@@ -12,7 +12,7 @@ public class Client {
     try {
       JarInjector.inject(clientJarPath,
                          tmpInjectedJarPath,
-                         ClientInjector.getInjectors("https://www.dawntained.com/game/dawntained_client.jar", "org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"),
+                         RuneLiteClientInjector.getInjectors(),
                          jarDependencies,
                          (name) -> name.equals("META-INF/MANIFEST.MF"));
 
@@ -22,7 +22,7 @@ public class Client {
       boolean success = tmpInjectedJar.renameTo(clientJar);
 
       if (!success) {
-        System.err.println("RuneLite injected client JAR could not be moved");
+        System.err.println("RuneLite injected client JAR could not be moved to replace original");
         System.exit(1);
       }
     }
