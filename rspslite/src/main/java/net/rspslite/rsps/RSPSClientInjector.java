@@ -14,8 +14,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import javassist.CtClass;
+import javassist.ClassPool;
+import javassist.CtMethod;
 import javassist.CtConstructor;
 import javassist.CtNewConstructor;
+import javassist.expr.ExprEditor;
+import javassist.expr.MethodCall;
+import javassist.NotFoundException;
 import javassist.CannotCompileException;
 import net.rspslite.injector.JarInjector;
 
@@ -25,19 +30,32 @@ public class RSPSClientInjector {
 
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
 
-    Map<String, String> oldschoolToRSPSClassMap = findClassMap(osrsInjectedClientJarPath, osrsJars, rspsClientJarPath, rspsJars);
+    //Map<String, String> oldschoolToRSPSClassMap = findClassMap(osrsInjectedClientJarPath, osrsJars, rspsClientJarPath, rspsJars);
 
-    /*injectors.put("Alora", (cc) -> {
+    injectors.put("Alora", (cc) -> {
       try {
+        ClassPool cp = cc.getClassPool();
 
         CtConstructor constructor = CtNewConstructor.make("public Alora() { this(\"1\", true); }", cc);
         cc.addConstructor(constructor);
 
-      } catch (CannotCompileException e) {
+        CtMethod createFrame = cc.getDeclaredMethod("createFrame", new CtClass[]{CtClass.booleanType});
+        createFrame.instrument(new ExprEditor() {
+
+          @Override
+          public void edit(MethodCall m) throws CannotCompileException {
+            if (m.getMethodName().equals("setVisible")) {
+              m.replace("{ }");
+            }
+          }
+
+        });
+
+      } catch (NotFoundException | CannotCompileException e) {
         System.err.println("Unable to apply injector to " + cc.getName() + ". Skipping");
         e.printStackTrace();
       }
-    });*/
+    });
 
     return injectors;
   }
