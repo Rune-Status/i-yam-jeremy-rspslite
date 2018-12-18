@@ -11,6 +11,7 @@ import net.rspslite.localstorage.LocalStorage;
 public class RSPSClient {
 
   private static final String RSPS_CLIENT_JAR_PATH = System.getProperty("user.home") + File.separator + "alora/client.jar";
+    private static final String RSPS_INJECTED_CLIENT_JAR_PATH = System.getProperty("user.home") + File.separator + "alora/injected-client.jar";
   private static final String RSPS_CLIENT_MAIN_CLASS = "Alora";
   private static final String[] RSPS_CLIENT_JAR_DEPENDENCIES = new String[]{
                                                                             System.getProperty("user.home") + File.separator + "alora/clientlibs.jar",
@@ -23,10 +24,10 @@ public class RSPSClient {
   private static final String[] OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES = new String[]{"/Users/i-yam-jeremy/.runelite/repository2/runescape-api-1.5.4.jar", "/Users/i-yam-jeremy/.runelite/repository2/runelite-api-1.5.4.jar"};
 
   public static Applet getApplet() {
-    injectClient(OSRS_INJECTED_CLIENT_PATH, OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES, RSPS_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES);
+    injectClient(OSRS_INJECTED_CLIENT_PATH, OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES, RSPS_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES, RSPS_INJECTED_CLIENT_JAR_PATH);
 
     try {
-      URL[] jarUrls = toUrls(RSPS_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES);
+      URL[] jarUrls = toUrls(RSPS_INJECTED_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES);
 
       ClassLoader clientLoader = new URLClassLoader(jarUrls, RSPSClient.class.getClassLoader());
 
@@ -53,28 +54,17 @@ public class RSPSClient {
     return new File(path).toURI().toURL();
   }
 
-  private static void injectClient(String osrsInjectedClientJarPath, String[] osrsJarDependencies, String rspsClientJarPath, String[] rspsJarDependencies) {
-    String tmpInjectedJarPath = rspsClientJarPath + ".tmp";
+  private static void injectClient(String osrsInjectedClientJarPath, String[] osrsJarDependencies, String rspsClientJarPath, String[] rspsJarDependencies, String rspsInjectedClientJarPath) {
 
     try {
       URL[] osrsJars = toUrls(osrsInjectedClientJarPath, osrsJarDependencies);
       URL[] rspsJars = toUrls(rspsClientJarPath, rspsJarDependencies);
 
       JarInjector.inject(rspsClientJarPath,
-                         tmpInjectedJarPath,
+                         rspsInjectedClientJarPath,
                          RSPSClientInjector.getInjectors(osrsInjectedClientJarPath, osrsJars, rspsClientJarPath, rspsJars),
                          rspsJarDependencies,
                          (name) -> false);
-
-      File clientJar = new File(rspsClientJarPath);
-      File tmpInjectedJar = new File(tmpInjectedJarPath);
-      clientJar.delete();
-      boolean success = tmpInjectedJar.renameTo(clientJar);
-
-      if (!success) {
-        System.err.println("RSPS injected client JAR could not be moved to replace original");
-        System.exit(1);
-      }
     }
     catch (IOException e) {
       System.err.println("RSPS client could not be injected");
