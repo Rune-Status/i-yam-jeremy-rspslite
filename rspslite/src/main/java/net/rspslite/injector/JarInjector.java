@@ -97,7 +97,7 @@ public class JarInjector {
     out.close();
   }
 
-  private static void mapEntries(String inputJarPath, BiConsumer<String, byte[]> f) throws IOException {
+  public static void mapEntries(String inputJarPath, BiConsumer<String, byte[]> f) throws IOException {
     ZipInputStream in = new ZipInputStream(new FileInputStream(inputJarPath));
 
     ZipEntry entry;
