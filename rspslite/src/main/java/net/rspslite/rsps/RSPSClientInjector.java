@@ -36,6 +36,48 @@ public class RSPSClientInjector {
       try {
         ClassPool cp = cc.getClassPool();
 
+        CtClass clientClass = cp.get("net.runelite.api.Client");
+
+        for (CtMethod method : clientClass.getMethods()) {
+          String declaringClassName = method.getDeclaringClass().getName();
+          if (!(declaringClassName.equals("net.runelite.api.Client") || declaringClassName.equals("net.runelite.api.GameEngine"))) {
+            continue;
+          }
+
+          String[] params = new String[method.getParameterTypes().length];
+          for (int i = 0; i < params.length; i++) {
+            params[i] = method.getParameterTypes()[i].getName() + " param" + i;
+          }
+          String paramsString = String.join(", ", params);
+
+          CtClass returnType = method.getReturnType();
+
+          String src = returnType.getName() + " " + method.getName() + "(" + paramsString + ") {\n";
+
+          if (method.getName().equals("getRevision")) {
+            src += "return 317;";
+          }
+          else if (returnType.equals(CtClass.intType)) {
+            src += "return 0;";
+          }
+          else if (returnType.equals(CtClass.longType)) {
+            src += "return 0L;";
+          }
+          else if (returnType.equals(CtClass.booleanType)) {
+            src += "return false;";
+          }
+          else if (returnType.equals(CtClass.voidType)) {
+            src += "return;";
+          }
+          else {
+            src += "return null;";
+          }
+
+          src += "\n}";
+          
+          cc.addMethod(CtMethod.make(src, cc));
+        }
+
         CtConstructor constructor = CtNewConstructor.make("public Alora() { this(\"1\", true); }", cc);
         cc.addConstructor(constructor);
 

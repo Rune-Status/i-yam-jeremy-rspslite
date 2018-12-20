@@ -18,6 +18,11 @@ public class RSPSClient {
                                                                             System.getProperty("user.home") + File.separator + "alora/discord-rpc-release-v3.3.0.jar",
                                                                             System.getProperty("user.home") + File.separator + "alora/Theme.jar",
                                                                             System.getProperty("user.home") + File.separator + "alora/jna-4.5.2.jar",
+
+                                                                            // RuneLite Dependencies
+                                                                            "/Users/i-yam-jeremy/.runelite/repository2/runescape-api-1.5.4.jar",
+                                                                            "/Users/i-yam-jeremy/.runelite/repository2/runelite-api-1.5.4.jar",
+                                                                            "/Users/i-yam-jeremy/.runelite/repository2/slf4j-api-1.7.25.jar"
                                                                           };
 
   private static final String OSRS_INJECTED_CLIENT_PATH = LocalStorage.getFilePath("osrs-injected-client.jar");
