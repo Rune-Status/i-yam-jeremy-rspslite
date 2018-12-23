@@ -30,17 +30,20 @@ public class RSPSClientInjector {
 
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
 
-    //Map<String, String> oldschoolToRSPSClassMap = findClassMap(osrsInjectedClientJarPath, osrsJars, rspsClientJarPath, rspsJars);
+    Map<String, String> oldschoolToRSPSClassMap = findClassMap(osrsInjectedClientJarPath, osrsJars, rspsClientJarPath, rspsJars);
+
+    //try { findNPCClass(rspsClientJarPath, rspsJars); } catch (IOException e) { e.printStackTrace(); }
 
     injectors.put("Alora", (cc) -> {
       try {
         ClassPool cp = cc.getClassPool();
 
-        CtClass clientClass = cp.get("net.runelite.api.Client");
+        CtClass clientClass = cp.get("net.runelite.rs.api.RSClient");
+
+        cc.addInterface(clientClass);
 
         for (CtMethod method : clientClass.getMethods()) {
-          String declaringClassName = method.getDeclaringClass().getName();
-          if (!(declaringClassName.equals("net.runelite.api.Client") || declaringClassName.equals("net.runelite.api.GameEngine"))) {
+          if (!method.getDeclaringClass().getName().startsWith("net.runelite.")) {
             continue;
           }
 
@@ -52,7 +55,7 @@ public class RSPSClientInjector {
 
           CtClass returnType = method.getReturnType();
 
-          String src = returnType.getName() + " " + method.getName() + "(" + paramsString + ") {\n";
+          String src = "public " + returnType.getName() + " " + method.getName() + "(" + paramsString + ") {\n";
 
           if (method.getName().equals("getRevision")) {
             src += "return 317;";
@@ -74,7 +77,7 @@ public class RSPSClientInjector {
           }
 
           src += "\n}";
-          
+
           cc.addMethod(CtMethod.make(src, cc));
         }
 
@@ -100,6 +103,29 @@ public class RSPSClientInjector {
     });
 
     return injectors;
+  }
+
+  private static void findNPCClass(String rspsClientJarPath, URL[] rspsJars) throws IOException {
+    JarInjector.mapEntries(rspsClientJarPath, (rspsName, rspsData) -> {
+      if (rspsName.endsWith(".class")) {
+        String rspsClassName = rspsName.replace("/", ".").substring(0, rspsName.length() - ".class".length());
+        try {
+          javassist.bytecode.ClassFile cf = new javassist.bytecode.ClassFile(new java.io.DataInputStream(new java.io.ByteArrayInputStream(rspsData)));
+          javassist.bytecode.ConstPool constants = cf.getConstPool();
+
+          for (int i = 1; i < constants.getSize(); i++) {
+            if (constants.getTag(i) == javassist.bytecode.ConstPool.CONST_String) { // or possibly CONST_Utf8
+          		String s = constants.getStringInfo(i);
+              if (s.equals("Vote manager")) {
+                System.out.println("NPC Class: " + rspsClassName);
+          		}
+          	}
+          }
+        } catch (IOException | NoClassDefFoundError e) {
+          //System.err.println("<>: RSPS class " + rspsName + " could not be found");
+        }
+      }
+    });
   }
 
   private static Map<String, String> findClassMap(String osrsInjectedClientJarPath, URL[] osrsJars,  String rspsClientJarPath, URL[] rspsJars) {
@@ -130,8 +156,8 @@ public class RSPSClientInjector {
                         matchedClasses.add(rspsClass);
                       }
                     } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                      //System.err.println("RSPS class " + rspsName + " could not be found");
-                      //e.printStackTrace();
+                      System.err.println("RSPS class " + rspsName + " could not be found");
+                      e.printStackTrace();
                     }
                   }
                 });

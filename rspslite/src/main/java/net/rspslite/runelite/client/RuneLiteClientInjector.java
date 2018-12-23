@@ -21,7 +21,7 @@ public class RuneLiteClientInjector {
         CtMethod load = cc.getDeclaredMethod("load", new CtClass[]{});
         cc.removeMethod(load);
 
-        CtMethod newLoad = CtMethod.make("public java.applet.Applet load() { return net.rspslite.rsps.RSPSClient.getApplet(); }", cc);
+        CtMethod newLoad = CtMethod.make("public java.applet.Applet load() { return net.rspslite.rsps.RSPSClient.getApplet($0.getClass().getClassLoader()); }", cc);
         cc.addMethod(newLoad);
 
       } catch (NotFoundException | CannotCompileException e) {

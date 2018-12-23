@@ -11,9 +11,9 @@ import net.rspslite.localstorage.LocalStorage;
 public class RSPSClient {
 
   private static final String RSPS_CLIENT_JAR_PATH = System.getProperty("user.home") + File.separator + "alora/client.jar";
-    private static final String RSPS_INJECTED_CLIENT_JAR_PATH = System.getProperty("user.home") + File.separator + "alora/injected-client.jar";
+  private static final String RSPS_INJECTED_CLIENT_JAR_PATH = System.getProperty("user.home") + File.separator + "alora/injected-client.jar";
   private static final String RSPS_CLIENT_MAIN_CLASS = "Alora";
-  private static final String[] RSPS_CLIENT_JAR_DEPENDENCIES = new String[]{
+  private static final String[] RSPS_CLIENT_JAR_DEPENDENCIES_FOR_INJECTION = new String[]{
                                                                             System.getProperty("user.home") + File.separator + "alora/clientlibs.jar",
                                                                             System.getProperty("user.home") + File.separator + "alora/discord-rpc-release-v3.3.0.jar",
                                                                             System.getProperty("user.home") + File.separator + "alora/Theme.jar",
@@ -25,16 +25,28 @@ public class RSPSClient {
                                                                             "/Users/i-yam-jeremy/.runelite/repository2/slf4j-api-1.7.25.jar"
                                                                           };
 
-  private static final String OSRS_INJECTED_CLIENT_PATH = LocalStorage.getFilePath("osrs-injected-client.jar");
-  private static final String[] OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES = new String[]{"/Users/i-yam-jeremy/.runelite/repository2/runescape-api-1.5.4.jar", "/Users/i-yam-jeremy/.runelite/repository2/runelite-api-1.5.4.jar"};
+  private static final String[] RSPS_CLIENT_JAR_DEPENDENCIES_FOR_CLASSLOADER = new String[]{
+                                                                            System.getProperty("user.home") + File.separator + "alora/clientlibs.jar",
+                                                                            System.getProperty("user.home") + File.separator + "alora/discord-rpc-release-v3.3.0.jar",
+                                                                            System.getProperty("user.home") + File.separator + "alora/Theme.jar",
+                                                                            System.getProperty("user.home") + File.separator + "alora/jna-4.5.2.jar",
+                                                                          };
 
-  public static Applet getApplet() {
-    injectClient(OSRS_INJECTED_CLIENT_PATH, OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES, RSPS_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES, RSPS_INJECTED_CLIENT_JAR_PATH);
+  private static final String OSRS_INJECTED_CLIENT_PATH = LocalStorage.getFilePath("osrs-injected-client.jar");
+  private static final String[] OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES = new String[]{
+    "/Users/i-yam-jeremy/.runelite/repository2/runescape-api-1.5.4.jar",
+    "/Users/i-yam-jeremy/.runelite/repository2/runelite-api-1.5.4.jar",
+    "/Users/i-yam-jeremy/.runelite/repository2/guava-23.2-jre.jar",
+    "/Users/i-yam-jeremy/.runelite/repository2/slf4j-api-1.7.25.jar",
+  };
+
+  public static Applet getApplet(ClassLoader classLoader) {
+    injectClient(OSRS_INJECTED_CLIENT_PATH, OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES, RSPS_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES_FOR_INJECTION, RSPS_INJECTED_CLIENT_JAR_PATH);
 
     try {
-      URL[] jarUrls = toUrls(RSPS_INJECTED_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES);
+      URL[] jarUrls = toUrls(RSPS_INJECTED_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES_FOR_CLASSLOADER);
 
-      ClassLoader clientLoader = new URLClassLoader(jarUrls, RSPSClient.class.getClassLoader());
+      ClassLoader clientLoader = new URLClassLoader(jarUrls, classLoader);
 
       Class<?> clientClass = clientLoader.loadClass(RSPS_CLIENT_MAIN_CLASS);
       Applet applet = (Applet) clientClass.newInstance();
