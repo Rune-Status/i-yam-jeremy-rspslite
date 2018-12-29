@@ -1,0 +1,52 @@
+[
+  {
+    "fields": ["int capacity", "int remainingCapacity"],
+    "methods": [
+      {
+        "signature": "void I(long)",
+        "bytecode": [
+          ["aconst_null"]
+        ],
+      },
+      {
+        "signature": "void reset()",
+        "bytecode": [
+          ["aload_0", "getfield", "putfield", "return"]
+        ]
+      },
+      {
+        "signature": "java.lang.Object get(long)",
+        "bytecode": [
+          ["aload_0", "getfield", "lload_1", "invokevirtual", "checkcast"]
+        ]
+      }
+    ],
+    "fieldFinders": [
+      {
+        "type": "method",
+        "field": "remainingCapacity",
+        "method": "void I(long)",
+        "bytecode": ["iconst_1", "iadd", "putfield"]
+      },
+      {
+        "type": "logical_elimination",
+        "field": "capacity"
+      }
+    ],
+    "methodRenames": [
+      {
+        "signature": "java.lang.Object get(long)",
+        "newName": "uninjectedGet"
+      }
+    ],
+    "injections": {
+      "interfaces": ["net.runelite.rs.api.RSNodeCache"],
+      "methods": [
+        "public void setCapacity(int n2) { $$field:capacity$$ = n2; }",
+        "public void setRemainingCapacity(int n2) { $$field:remainingCapacity$$ = n2; }",
+        "public net.runelite.rs.api.RSCacheableNode get(long l2) { return $$method:get$$(l2); }",
+        "public void reset() { $$method:reset$$(); }"
+      ]
+    }
+  },
+]
