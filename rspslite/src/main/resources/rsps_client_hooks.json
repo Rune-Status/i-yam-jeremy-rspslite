@@ -1,6 +1,8 @@
 [
   {
+    "name": "RSNodeCache",
     "matching": {
+      "isRootClass": true,
       "fields": ["int capacity", "int remainingCapacity"],
       "methods": [
         {
@@ -52,13 +54,16 @@
     }
   },
   {
+    "name": "RSNode",
     "matching": {
-      "fields": ["$$thisClass$$ next", "$$thisClass prev", "long hash"],
+      "isRootClass": true,
+      "fields": ["$$thisClass$$ next", "$$thisClass$$ prev", "long hash"],
       "methods": [
         {
           "signature": "void unlink()",
           "bytecode": [
-            ["aload_0", "getfield", "aload_0", "getfield", "putfield"]
+            ["aload_0", "getfield", "aload_0", "getfield", "putfield"],
+            ["aload_0", "aconst_null", "putfield", "return"]
           ]
         }
       ]
@@ -81,7 +86,8 @@
         "public long getHash() { return $$field:hash$$; }",
         "public net.runelite.rs.api.RSNode getNext() { return $$field:next$$; }",
         "public net.runelite.rs.api.RSNode getPrevious() { return $$field:prev$$; }",
-        "public void unlink() { $$method:unlink()$$(); }"
+        "public void unlink() { $$method:unlink()$$(); }",
+        "public void onUnlink() { }"
       ]
     }
   }

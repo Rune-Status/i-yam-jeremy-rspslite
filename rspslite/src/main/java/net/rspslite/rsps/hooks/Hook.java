@@ -4,9 +4,14 @@ import javassist.CtClass;
 
 public class Hook {
 
+  private String name;
   private Matching matching;
   private FieldFinder[] fieldFinders;
   private Injections injections;
+
+  public String getName() {
+    return name;
+  }
 
   public Matching getMatching() {
     return matching;
