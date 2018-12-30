@@ -34,12 +34,17 @@ public class RSPSClientInjector {
 
     //try { findNPCClass(rspsClientJarPath, rspsJars); } catch (IOException e) { e.printStackTrace(); }
 
-    Hook[] hooks = HookReader.readHooks();
+    final Hook[] hooks = HookReader.readHooks();
     for (Hook hook : hooks) {
       System.out.println("Hook interface: " + hook.getInjections().getInterfaces()[0]);
     }
 
     injectors.put("Alora", (cc) -> {
+      try {
+        System.out.println("Hook #0 is match: " + hooks[0].isMatch(cc.getClassPool().get("ES")));
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
       try {
         ClassPool cp = cc.getClassPool();
 

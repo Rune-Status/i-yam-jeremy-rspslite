@@ -1,5 +1,7 @@
 package net.rspslite.rsps.hooks;
 
+import javassist.CtClass;
+
 public class Hook {
 
   private Matching matching;
@@ -16,6 +18,10 @@ public class Hook {
 
   public Injections getInjections() {
     return injections;
+  }
+
+  public boolean isMatch(CtClass cc) {
+    return matching.isMatch(cc);
   }
 
 }
