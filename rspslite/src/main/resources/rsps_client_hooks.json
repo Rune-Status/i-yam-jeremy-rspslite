@@ -1,26 +1,28 @@
 [
   {
-    "fields": ["int capacity", "int remainingCapacity"],
-    "methods": [
-      {
-        "signature": "void I(long)",
-        "bytecode": [
-          ["aconst_null"]
-        ],
-      },
-      {
-        "signature": "void reset()",
-        "bytecode": [
-          ["aload_0", "getfield", "putfield", "return"]
-        ]
-      },
-      {
-        "signature": "java.lang.Object get(long)",
-        "bytecode": [
-          ["aload_0", "getfield", "lload_1", "invokevirtual", "checkcast"]
-        ]
-      }
-    ],
+    "matching": {
+      "fields": ["int capacity", "int remainingCapacity"],
+      "methods": [
+        {
+          "signature": "void I(long)",
+          "bytecode": [
+            ["aconst_null"]
+          ]
+        },
+        {
+          "signature": "void reset()",
+          "bytecode": [
+            ["aload_0", "getfield", "putfield", "return"]
+          ]
+        },
+        {
+          "signature": "java.lang.Object get(long)",
+          "bytecode": [
+            ["aload_0", "getfield", "lload_1", "invokevirtual", "checkcast"]
+          ]
+        }
+      ]
+    },
     "fieldFinders": [
       {
         "type": "method",
@@ -44,9 +46,43 @@
       "methods": [
         "public void setCapacity(int n2) { $$field:capacity$$ = n2; }",
         "public void setRemainingCapacity(int n2) { $$field:remainingCapacity$$ = n2; }",
-        "public net.runelite.rs.api.RSCacheableNode get(long l2) { return $$method:get$$(l2); }",
-        "public void reset() { $$method:reset$$(); }"
+        "public net.runelite.rs.api.RSCacheableNode get(long l2) { return $$method:get(long)$$(l2); }",
+        "public void reset() { $$method:reset(long)$$(); }"
       ]
     }
   },
+  {
+    "matching": {
+      "fields": ["$$thisClass$$ next", "$$thisClass prev", "long hash"],
+      "methods": [
+        {
+          "signature": "void unlink()",
+          "bytecode": [
+            ["aload_0", "getfield", "aload_0", "getfield", "putfield"]
+          ]
+        }
+      ]
+    },
+    "fieldFinders": [
+      {
+        "type": "method",
+        "field": "prev",
+        "method": "void unlink()",
+        "bytecode": ["aload_0", "getfield", "ifnonnull"]
+      },
+      {
+        "type": "logical_elimination",
+        "field": "prev"
+      }
+    ],
+    "injections": {
+      "interfaces": ["net.runelite.rs.api.RSNode"],
+      "methods": [
+        "public long getHash() { return $$field:hash$$; }",
+        "public net.runelite.rs.api.RSNode getNext() { return $$field:next$$; }",
+        "public net.runelite.rs.api.RSNode getPrevious() { return $$field:prev$$; }",
+        "public void unlink() { $$method:unlink()$$(); }"
+      ]
+    }
+  }
 ]

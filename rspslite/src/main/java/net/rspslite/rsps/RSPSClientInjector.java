@@ -23,6 +23,8 @@ import javassist.expr.MethodCall;
 import javassist.NotFoundException;
 import javassist.CannotCompileException;
 import net.rspslite.injector.JarInjector;
+import net.rspslite.rsps.hooks.HookReader;
+import net.rspslite.rsps.hooks.Hook;
 
 public class RSPSClientInjector {
 
@@ -31,6 +33,11 @@ public class RSPSClientInjector {
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
 
     //try { findNPCClass(rspsClientJarPath, rspsJars); } catch (IOException e) { e.printStackTrace(); }
+
+    Hook[] hooks = HookReader.readHooks();
+    for (Hook hook : hooks) {
+      System.out.println("Hook interface: " + hook.getInjections().getInterfaces()[0]);
+    }
 
     injectors.put("Alora", (cc) -> {
       try {
