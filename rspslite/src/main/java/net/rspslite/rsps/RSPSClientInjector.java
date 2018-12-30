@@ -39,12 +39,15 @@ public class RSPSClientInjector {
       System.out.println("Hook interface: " + hook.getInjections().getInterfaces()[0]);
     }
 
-    injectors.put("Alora", (cc) -> {
-      try {
-        System.out.println("Hook #0 is match: " + hooks[0].isMatch(cc.getClassPool().get("ES")));
-      } catch (Exception e) {
-        e.printStackTrace();
+    injectors.put("*", (cc) -> {
+      for (Hook hook : hooks) {
+        if (hook.isMatch(cc)) {
+          hook.applyTo(cc);
+        }
       }
+    });
+
+    injectors.put("Alora", (cc) -> {
       try {
         ClassPool cp = cc.getClassPool();
 

@@ -66,6 +66,10 @@ public class HookMethod {
     try {
       CodeAttribute code = method.getMethodInfo().getCodeAttribute();
 
+      if (code == null) {
+        return false;
+      }
+
       for (String[] bytecodeBlock : this.getBytecode()) {
         CodeIterator ci = code.iterator();
         boolean foundMatch = false;

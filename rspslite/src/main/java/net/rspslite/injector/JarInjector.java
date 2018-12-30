@@ -24,7 +24,7 @@ public class JarInjector {
 
   public static void inject(String inputJarPath, String outputJarPath, Map<String, Consumer<CtClass>> classInjectors, String[] jarDependencies, Predicate<String> shouldFilterFile) throws IOException {
     ClassPool cp = readClassPool(inputJarPath, jarDependencies);
-    transform(cp, classInjectors);
+    transform(inputJarPath, cp, classInjectors);
     outputJar(inputJarPath, cp, outputJarPath, shouldFilterFile);
   }
 
@@ -55,16 +55,31 @@ public class JarInjector {
     });
   }
 
-  private static void transform(ClassPool cp, Map<String, Consumer<CtClass>> classInjectors) {
-    for (String className : classInjectors.keySet()) {
-      Consumer<CtClass> transformer = classInjectors.get(className);
-      try {
-        CtClass cc = cp.get(className);
-        transformer.accept(cc);
-      } catch (javassist.NotFoundException e) {
-        System.err.println("Unable to apply injector because could not find " + className);
+  private static void transform(String inputJarPath, ClassPool cp, Map<String, Consumer<CtClass>> classInjectors) throws IOException {
+    mapEntries(inputJarPath, (name, data) -> {
+      if (name.endsWith(".class")) {
+        String className = getClassName(name);
+        if (classInjectors.containsKey(className)) {
+          Consumer<CtClass> transformer = classInjectors.get(className);
+          try {
+            CtClass cc = cp.get(className);
+            transformer.accept(cc);
+          } catch (javassist.NotFoundException e) {
+            System.err.println("Unable to apply injector because could not find " + className);
+          }
+        }
+
+        if (classInjectors.containsKey("*")) {
+          Consumer<CtClass> transformer = classInjectors.get("*");
+          try {
+            CtClass cc = cp.get(className);
+            transformer.accept(cc);
+          } catch (javassist.NotFoundException e) {
+            System.err.println("Unable to apply injector because could not find " + className);
+          }
+        }
       }
-    }
+    });
   }
 
   private static void outputJar(String inputJarPath, ClassPool cp, String outputJarPath, Predicate<String> shouldFilterFile) throws IOException {

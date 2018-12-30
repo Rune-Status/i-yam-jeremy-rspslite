@@ -24,4 +24,11 @@ public class Hook {
     return matching.isMatch(cc);
   }
 
+  public void applyTo(CtClass cc) { // assumes the class is a match
+    for (String interfaceName : getInjections().getInterfaces()) {
+      System.out.print(interfaceName + " ");
+    }
+    System.out.println("-> " + cc.getName());
+  }
+
 }
