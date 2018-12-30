@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import javassist.CtClass;
 import javassist.CtMethod;
+import javassist.CtField;
 import javassist.NotFoundException;
 
 public class Matching {
@@ -25,7 +26,10 @@ public class Matching {
   }
 
   public boolean isMatch(CtClass cc) {
+    return isMatchRootClass(cc) && isMatchFields(cc) && isMatchMethods(cc);
+  }
 
+  public boolean isMatchRootClass(CtClass cc) {
     try {
       String superclassName = cc.getSuperclass().getName();
       if (!isRootClass() && superclassName.equals("java.lang.Object")) {
@@ -39,19 +43,52 @@ public class Matching {
       return false;
     }
 
-    // TODO check fields
+    return true;
+  }
 
+  public boolean isMatchFields(CtClass cc) {
+    List<CtField> usedFields = new ArrayList<>();
+
+    for (String hookField : getFields()) {
+      String[] splitString = hookField.split("[\\s]+");
+      String fieldType = splitString[0];
+      String fieldName = splitString[1];
+
+      if (fieldType.equals("$$thisClass$$")) {
+        fieldType = cc.getName();
+      }
+
+      boolean foundMatch = false;
+      for (CtField field : cc.getDeclaredFields()) {
+        try {
+          if (!usedFields.contains(field) && field.getType().getName().equals(fieldType)) {
+            foundMatch = true;
+            usedFields.add(field);
+            break;
+          }
+        } catch (NotFoundException e) {
+          e.printStackTrace();
+        }
+      }
+
+      if (!foundMatch) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public boolean isMatchMethods(CtClass cc) {
     List<CtMethod> usedMethods = new ArrayList<>();
 
     for (HookMethod hookMethod : methods) {
       boolean foundMatch = false;
       for (CtMethod method : cc.getDeclaredMethods()) {
-        if (!usedMethods.contains(method)) {
-          if (hookMethod.isMatch(method)) {
-            foundMatch = true;
-            usedMethods.add(method);
-            break;
-          }
+        if (!usedMethods.contains(method) && hookMethod.isMatch(method)) {
+          foundMatch = true;
+          usedMethods.add(method);
+          break;
         }
       }
 
