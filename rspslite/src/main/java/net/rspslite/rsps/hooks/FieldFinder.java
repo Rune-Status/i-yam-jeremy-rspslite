@@ -5,6 +5,8 @@ import java.util.Arrays;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
+import javassist.CtConstructor;
+import javassist.CtBehavior;
 import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.CodeAttribute;
@@ -19,7 +21,8 @@ public class FieldFinder {
   private String method;
   private String[] bytecode;
 
-
+  // paramTypes field only used for type "constructor" field finder
+  private String[] paramTypes;
 
   public String getType() {
     return type;
@@ -37,11 +40,17 @@ public class FieldFinder {
     return bytecode;
   }
 
+  public String[] getParamTypes() {
+    return paramTypes;
+  }
 
   public void find(CtClass cc, String[] fields, Map<String, CtMethod> methodMap, Map<String, CtField> fieldMap) {
     switch (getType()) {
       case "method":
         findByMethodExamination(cc, methodMap, fieldMap);
+        break;
+      case "constructor":
+        findByConstructorExamination(cc, fieldMap);
         break;
       case "logical_elimination":
         findByLogicalElimination(cc, fields, fieldMap);
@@ -55,12 +64,27 @@ public class FieldFinder {
   private void findByMethodExamination(CtClass cc, Map<String, CtMethod> methodMap, Map<String, CtField> fieldMap) {
     CtMethod method = MethodSignatureUtil.getMethod(getMethod(), methodMap);
 
-    if (method == null) {
-      System.err.println("FieldFinder method examination method not found in map for field " + getField() + " in " + cc.getName());
-      return;
+    if (method != null) {
+      findByBehaviorExamination(cc, method, fieldMap);
     }
+    else {
+      System.err.println("FieldFinder method examination method not found in map for field " + getField() + " in " + cc.getName());
+    }
+  }
 
-    CodeAttribute code = method.getMethodInfo().getCodeAttribute();
+  private void findByConstructorExamination(CtClass cc, Map<String, CtField> fieldMap) {
+    CtConstructor constructor = HookConstructor.findConstructorByParamTypes(cc, getParamTypes());
+
+    if (constructor != null) {
+      findByBehaviorExamination(cc, constructor, fieldMap);
+    }
+    else {
+      System.err.println("FieldFinder constructor examination constructor not found in map for field " + getField() + " in " + cc.getName());
+    }
+  }
+
+  private void findByBehaviorExamination(CtClass cc, CtBehavior behavior, Map<String, CtField> fieldMap) {
+    CodeAttribute code = behavior.getMethodInfo().getCodeAttribute();
 
     int bytecodeIndex = BytecodeUtil.findBytecodePatternIndex(code, getBytecode());
     byte[] bytecodeBytes = code.getCode();

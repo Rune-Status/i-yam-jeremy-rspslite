@@ -13,6 +13,7 @@ public class Matching {
   private String childOf;
   private String[] fields;
   private HookMethod[] methods;
+  private HookConstructor[] constructors;
   private boolean isRootClass;
 
   public String getChildOf() {
@@ -27,12 +28,20 @@ public class Matching {
     return methods;
   }
 
+  public HookConstructor[] getConstructors() {
+    return constructors;
+  }
+
   public boolean isRootClass() {
     return isRootClass;
   }
 
   public boolean isMatch(CtClass cc, Map<String, CtClass> classMap, Map<String, CtMethod> methodMap) {
-    return isMatchChildOf(cc, classMap) && isMatchRootClass(cc) && isMatchFields(cc) && isMatchMethods(cc, methodMap);
+    return isMatchChildOf(cc, classMap) &&
+     isMatchRootClass(cc) &&
+     isMatchFields(cc) &&
+     isMatchMethods(cc, methodMap) &&
+     isMatchConstructors(cc);
   }
 
   private boolean isMatchChildOf(CtClass cc, Map<String, CtClass> classMap) {
@@ -139,6 +148,21 @@ public class Matching {
       }
 
       if (!foundMatch) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private boolean isMatchConstructors(CtClass cc) {
+    if (getConstructors() == null) {
+      return true;
+    }
+
+    // no need to keep track of used constructors because each constructor with param types is unique
+    for (HookConstructor hookConstructor : getConstructors()) {
+      if (!hookConstructor.isDeclaredIn(cc)) {
         return false;
       }
     }

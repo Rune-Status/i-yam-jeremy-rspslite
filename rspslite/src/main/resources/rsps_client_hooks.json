@@ -112,5 +112,36 @@
     "injections": {
       "interfaces": ["net.runelite.rs.api.RSCacheableNode"]
     }
+  },
+  {
+    "name": "RSItemContainer",
+    "matching": {
+      "childOf": "RSNode",
+      "fields": ["int[] itemIds", "int[] stackSizes"],
+      "constructors": [
+        {
+          "name": "init",
+          "paramTypes": [],
+          "bytecode": [
+            ["aload_0", "iconst_1",  "newarray", "dup", "iconst_0", "iconst_m1", "iastore", "putfield"]
+          ]
+        }
+      ]
+    },
+    "fieldFinders": [
+      {
+        "type": "constructor",
+        "field": "itemIds",
+        "paramTypes": [],
+        "bytecode": ["aload_0", "iconst_1",  "newarray", "dup", "iconst_0", "iconst_m1", "iastore", "putfield"]
+      },
+      {
+        "type": "logical_elimination",
+        "field": "stackSizes"
+      }
+    ],
+    "injections": {
+      "interfaces": ["net.runelite.rs.api.RSItemContainer"]
+    }
   }
 ]
