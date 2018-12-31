@@ -41,9 +41,7 @@ public class RSPSClientInjector {
 
     injectors.put("*", (cc) -> {
       for (Hook hook : hooks) {
-        if (hook.isMatch(cc)) {
-          hook.applyTo(cc);
-        }
+        hook.tryApplyTo(cc);
       }
     });
 

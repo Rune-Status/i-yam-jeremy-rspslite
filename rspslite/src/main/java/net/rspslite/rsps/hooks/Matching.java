@@ -2,6 +2,7 @@ package net.rspslite.rsps.hooks;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.CtField;
@@ -25,8 +26,8 @@ public class Matching {
     return isRootClass;
   }
 
-  public boolean isMatch(CtClass cc) {
-    return isMatchRootClass(cc) && isMatchFields(cc) && isMatchMethods(cc);
+  public boolean isMatch(CtClass cc, Map<String, CtMethod> methodMap) {
+    return isMatchRootClass(cc) && isMatchFields(cc) && isMatchMethods(cc, methodMap);
   }
 
   public boolean isMatchRootClass(CtClass cc) {
@@ -79,13 +80,14 @@ public class Matching {
     return true;
   }
 
-  public boolean isMatchMethods(CtClass cc) {
+  public boolean isMatchMethods(CtClass cc, Map<String, CtMethod> methodMap) {
     List<CtMethod> usedMethods = new ArrayList<>();
 
     for (HookMethod hookMethod : methods) {
       boolean foundMatch = false;
       for (CtMethod method : cc.getDeclaredMethods()) {
         if (!usedMethods.contains(method) && hookMethod.isMatch(method)) {
+          methodMap.put(hookMethod.getSignature(), method);
           foundMatch = true;
           usedMethods.add(method);
           break;

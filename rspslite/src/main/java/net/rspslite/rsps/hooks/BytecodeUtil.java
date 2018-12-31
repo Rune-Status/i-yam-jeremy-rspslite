@@ -9,6 +9,9 @@ import javassist.bytecode.BadBytecode;
 
 public class BytecodeUtil {
 
+  /**
+    Returns index to last bytecode opcode in the bytecodeBlock in byte array code.getCode()
+  */
   public static int findBytecodePatternIndex(CodeAttribute code, String[] bytecodeBlock) {
     if (code == null) {
       return -1;

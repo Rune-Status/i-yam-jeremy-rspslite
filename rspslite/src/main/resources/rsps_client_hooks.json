@@ -73,7 +73,7 @@
         "type": "method",
         "field": "prev",
         "method": "void unlink()",
-        "bytecode": ["aload_0", "getfield", "ifnonnull"]
+        "bytecode": ["aconst_null", "aload_0", "getfield"]
       },
       {
         "type": "logical_elimination",

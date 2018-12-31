@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import javassist.CtClass;
 import javassist.CtField;
+import javassist.CtMethod;
 
 public class Hook {
 
@@ -28,20 +29,23 @@ public class Hook {
     return injections;
   }
 
-  public boolean isMatch(CtClass cc) {
-    return matching.isMatch(cc);
+  private boolean isMatch(CtClass cc, Map<String, CtMethod> methodMap) {
+    return matching.isMatch(cc, methodMap);
   }
 
-  public void applyTo(CtClass cc) { // assumes the class is a match
-    for (String interfaceName : getInjections().getInterfaces()) {
-      System.out.print(interfaceName + " ");
-    }
-    System.out.println("-> " + cc.getName());
+  public void tryApplyTo(CtClass cc) { // assumes the class is a match
+    Map<String, CtMethod> methodMap = new HashMap<>();
+    if (isMatch(cc, methodMap)) {
+      for (String interfaceName : getInjections().getInterfaces()) {
+        System.out.print(interfaceName + " ");
+      }
+      System.out.println("-> " + cc.getName());
 
-    Map<String, CtField> fieldMap = new HashMap<>();
+      Map<String, CtField> fieldMap = new HashMap<>();
 
-    for (FieldFinder finder : getFieldFinders()) {
-      finder.find(cc, getMatching().getFields(), fieldMap);
+      for (FieldFinder finder : getFieldFinders()) {
+        finder.find(cc, getMatching().getFields(), methodMap, fieldMap);
+      }
     }
   }
 
