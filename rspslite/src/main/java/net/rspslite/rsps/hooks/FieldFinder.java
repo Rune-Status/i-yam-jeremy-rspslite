@@ -53,12 +53,13 @@ public class FieldFinder {
   }
 
   private void findByMethodExamination(CtClass cc, Map<String, CtMethod> methodMap, Map<String, CtField> fieldMap) {
-    if (!methodMap.containsKey(getMethod())) {
+    CtMethod method = MethodSignatureUtil.getMethod(getMethod(), methodMap);
+
+    if (method == null) {
       System.err.println("FieldFinder method examination method not found in map for field " + getField() + " in " + cc.getName());
       return;
     }
 
-    CtMethod method = methodMap.get(getMethod());
     CodeAttribute code = method.getMethodInfo().getCodeAttribute();
 
     int bytecodeIndex = BytecodeUtil.findBytecodePatternIndex(code, getBytecode());

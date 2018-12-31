@@ -29,7 +29,7 @@
       {
         "type": "method",
         "field": "remainingCapacity",
-        "method": "void I(long)",
+        "method": "I(long)",
         "bytecode": ["iconst_1", "iadd", "putfield"]
       },
       {
@@ -72,7 +72,7 @@
       {
         "type": "method",
         "field": "prev",
-        "method": "void unlink()",
+        "method": "unlink()",
         "bytecode": ["aconst_null", "aload_0", "getfield"]
       },
       {

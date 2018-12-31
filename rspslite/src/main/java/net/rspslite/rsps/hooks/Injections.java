@@ -50,7 +50,6 @@ public class Injections {
       return;
     }
 
-    //TODO make it not necessary to include return type in method signature when calling a method $$method:unlink()$$ instead of $$method:void unlink()$$ and make it work regardless of whitespace (so parse and match)
     Pattern pattern = Pattern.compile("\\$\\$(.*?)\\$\\$");
 
     for (String newMethod : getNewMethods()) {
@@ -67,7 +66,7 @@ public class Injections {
             newMethod = newMethod.replace(matcher.group(0), "$0." + fieldMap.get(value).getName());
             break;
           case "method":
-            newMethod = newMethod.replace(matcher.group(0), "$0." + getMethodName(value, methodMap));
+            newMethod = newMethod.replace(matcher.group(0), "$0." + MethodSignatureUtil.getMethod(value, methodMap).getName());
             break;
           default:
             System.err.println("Unrecognized $$ type: " + type + " in " + cc.getName());
@@ -83,46 +82,6 @@ public class Injections {
         System.err.println("Method could not be added to " + cc.getName());
       }
     }
-  }
-
-  private static String getMethodName(String methodSigWithoutReturnType, Map<String, CtMethod> methodMap) {
-    String methodName = methodSigWithoutReturnType.split("[\\s]+")[0];
-    String[] methodParamTypes = getMethodParamTypes(methodSigWithoutReturnType);
-    for (String otherMethodSignature : methodMap.keySet()) {
-      String otherMethodName = otherMethodSignature.split("[\\s]+")[1];
-      String[] otherMethodParamTypes = getMethodParamTypes(otherMethodSignature);
-
-      if (methodName.equals(otherMethodName) && areStringArraysEqual(methodParamTypes, otherMethodParamTypes)) {
-        return methodMap.get(otherMethodSignature).getName();
-      }
-    }
-
-    System.err.println("Couldn't find method with signature " + methodSigWithoutReturnType + " in injection of new method");
-    return null;
-  }
-
-  private static String[] getMethodParamTypes(String methodSignature) {
-    String[] splitString = methodSignature.split("\\(")[1].split("\\)");
-    if (splitString.length == 0) {
-      return new String[]{};
-    }
-    else {
-      return splitString[0].split(",[\\s]*");
-    }
-  }
-
-  private static boolean areStringArraysEqual(String[] a, String[] b) {
-    if (a.length != b.length) {
-      return false;
-    }
-
-    for (int i = 0; i < a.length; i++) {
-      if (!a[i].equals(b[i])) {
-        return false;
-      }
-    }
-
-    return true;
   }
 
 }
