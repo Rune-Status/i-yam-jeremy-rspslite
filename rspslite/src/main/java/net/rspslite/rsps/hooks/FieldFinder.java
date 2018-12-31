@@ -1,9 +1,12 @@
 package net.rspslite.rsps.hooks;
 
 import java.util.Map;
+import java.util.Arrays;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
+import javassist.Modifier;
+import javassist.NotFoundException;
 import javassist.bytecode.CodeAttribute;
 import javassist.bytecode.ConstPool;
 
@@ -38,7 +41,7 @@ public class FieldFinder {
   public void find(CtClass cc, String[] fields, Map<String, CtMethod> methodMap, Map<String, CtField> fieldMap) {
     switch (getType()) {
       case "method":
-        findByMethodExamination(cc, fields, methodMap, fieldMap);
+        findByMethodExamination(cc, methodMap, fieldMap);
         break;
       case "logical_elimination":
         findByLogicalElimination(cc, fields, fieldMap);
@@ -49,11 +52,10 @@ public class FieldFinder {
     }
   }
 
-  private void findByMethodExamination(CtClass cc, String[] fields, Map<String, CtMethod> methodMap, Map<String, CtField> fieldMap) {
-    //TODO
-
+  private void findByMethodExamination(CtClass cc, Map<String, CtMethod> methodMap, Map<String, CtField> fieldMap) {
     if (!methodMap.containsKey(getMethod())) {
-      System.err.println("FieldFinder failed for field " + getField() + " in " + cc.getName());
+      System.err.println("FieldFinder method examination method not found in map for field " + getField() + " in " + cc.getName());
+      return;
     }
 
     CtMethod method = methodMap.get(getMethod());
@@ -74,12 +76,66 @@ public class FieldFinder {
     ConstPool constPool = code.getConstPool();
     String fieldName = constPool.getFieldrefName(constPoolIndex);
 
-    CtField fieldObj = cc.getDeclaredField(fieldName);
-    fieldMap.put(getField(), fieldObj);
+    try {
+      CtField fieldObj = cc.getDeclaredField(fieldName);
+      fieldMap.put(getField(), fieldObj);
+    } catch (NotFoundException e) {
+      e.printStackTrace();
+      System.err.println("FieldFinder method examination failed getting found field for field " + getField() + " in " + cc.getName());
+      return;
+    }
   }
 
-  private void findByLogicalElimination(CtClass cc, String[] fields, Map<String, CtField> fieldMap) {
-    //TODO
+  private void findByLogicalElimination(CtClass cc, String[] fieldSignatures, Map<String, CtField> fieldMap) {
+    String fieldType = getFieldType(cc.getName(), getField(), fieldSignatures);
+
+    if (fieldType == null) {
+      System.err.println("FieldFinder logical elimination failed for field " + getField() + " in " + cc.getName());
+      return;
+    }
+
+    CtField[] possibleFields = getPossibleFields(cc, fieldType, fieldMap);
+
+    if (possibleFields.length == 1) {
+      fieldMap.put(getField(), possibleFields[0]);
+    }
+    else {
+      System.err.println("FieldFinder logical elimination only able to narrow it down to " + possibleFields.length + " possible fields");
+      return;
+    }
+  }
+
+  private static CtField[] getPossibleFields(CtClass cc, String fieldType, Map<String, CtField> fieldMap) {
+    return Arrays.stream(cc.getDeclaredFields())
+      .filter(f -> !Modifier.isStatic(f.getModifiers()))
+      .filter(f -> {
+        try {
+          return f.getType().getName().equals(fieldType);
+        } catch (NotFoundException e) {
+          e.printStackTrace();
+          return false;
+        }
+      })
+      .filter(f -> !fieldMap.containsValue(f))
+      .toArray(CtField[]::new);
+  }
+
+  private static String getFieldType(String className, String searchFieldName, String[] fieldSignatures) {
+    for (String hookField : fieldSignatures) {
+      String[] splitString = hookField.split("[\\s]+");
+      String fieldType = splitString[0];
+      String fieldName = splitString[1];
+
+      if (fieldType.equals("$$thisClass$$")) {
+        fieldType = className;
+      }
+
+      if (fieldName.equals(searchFieldName)) {
+        return fieldType;
+      }
+    }
+
+    return null;
   }
 
 }

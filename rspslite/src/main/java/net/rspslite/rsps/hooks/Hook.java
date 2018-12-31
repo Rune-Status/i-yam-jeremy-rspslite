@@ -46,6 +46,10 @@ public class Hook {
       for (FieldFinder finder : getFieldFinders()) {
         finder.find(cc, getMatching().getFields(), methodMap, fieldMap);
       }
+
+      for (String field : fieldMap.keySet()) {
+        System.out.println("\t" + field + " -> " + fieldMap.get(field).getName());
+      }
     }
   }
 

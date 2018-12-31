@@ -77,7 +77,11 @@
       },
       {
         "type": "logical_elimination",
-        "field": "prev"
+        "field": "next"
+      },
+      {
+        "type": "logical_elimination",
+        "field": "hash"
       }
     ],
     "injections": {
