@@ -63,61 +63,14 @@ public class HookMethod {
   }
 
   private boolean isBytecodeMatch(CtMethod method) {
-    try {
-      CodeAttribute code = method.getMethodInfo().getCodeAttribute();
+    CodeAttribute code = method.getMethodInfo().getCodeAttribute();
 
-      if (code == null) {
-        return false;
-      }
-
-      for (String[] bytecodeBlock : this.getBytecode()) {
-        CodeIterator ci = code.iterator();
-        boolean foundMatch = false;
-
-        List<String> bytecodeBuffer = new ArrayList<>();
-        while (ci.hasNext()) {
-          String inst = opcodeToString(code.getCode()[ci.next()]);
-          bytecodeBuffer.add(inst);
-
-          if (bytecodeBuffer.size() > bytecodeBlock.length) {
-              bytecodeBuffer.remove(0);
-          }
-
-          if (bytecodeBuffer.size() == bytecodeBlock.length) {
-            if (bytecodeBlocksEqual(bytecodeBuffer.toArray(new String[]{}), bytecodeBlock)) {
-              foundMatch = true;
-              break;
-            }
-          }
-        }
-
-        if (!foundMatch) {
-          return false;
-        }
-      }
-    } catch (BadBytecode e) {
-      e.printStackTrace();
+    if (code == null) {
       return false;
     }
 
-    return true;
-  }
-
-  private static String opcodeToString(byte opcode) {
-    int index = opcode & 0xFF; // gets unsigned byte value
-    return Mnemonic.OPCODE[index];
-  }
-
-  private static boolean bytecodeBlocksEqual(String[] bc1, String[] bc2) {
-    if (bc1.length != bc2.length) {
-      return false;
-    }
-
-    for (int i = 0; i < bc1.length; i++) {
-      if ((bc1[i] == null && bc2[i] != null) ||
-          (bc1[i] != null && bc2[i] == null) ||
-          (!bc1[i].equals(bc2[i]))) {
-
+    for (String[] bytecodeBlock : this.getBytecode()) {
+      if (BytecodeUtil.findBytecodePatternIndex(code, bytecodeBlock) == -1) {
         return false;
       }
     }

@@ -1,6 +1,9 @@
 package net.rspslite.rsps.hooks;
 
+import java.util.Map;
+import java.util.HashMap;
 import javassist.CtClass;
+import javassist.CtField;
 
 public class Hook {
 
@@ -34,6 +37,12 @@ public class Hook {
       System.out.print(interfaceName + " ");
     }
     System.out.println("-> " + cc.getName());
+
+    Map<String, CtField> fieldMap = new HashMap<>();
+
+    for (FieldFinder finder : getFieldFinders()) {
+      finder.find(cc, getMatching().getFields(), fieldMap);
+    }
   }
 
 }
