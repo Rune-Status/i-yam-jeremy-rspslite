@@ -10,9 +10,14 @@ import javassist.NotFoundException;
 
 public class Matching {
 
+  private String childOf;
   private String[] fields;
   private HookMethod[] methods;
   private boolean isRootClass;
+
+  public String getChildOf() {
+    return childOf;
+  }
 
   public String[] getFields() {
     return fields;
@@ -26,11 +31,42 @@ public class Matching {
     return isRootClass;
   }
 
-  public boolean isMatch(CtClass cc, Map<String, CtMethod> methodMap) {
-    return isMatchRootClass(cc) && isMatchFields(cc) && isMatchMethods(cc, methodMap);
+  public boolean isMatch(CtClass cc, Map<String, CtClass> classMap, Map<String, CtMethod> methodMap) {
+    return isMatchChildOf(cc, classMap) && isMatchRootClass(cc) && isMatchFields(cc) && isMatchMethods(cc, methodMap);
   }
 
-  public boolean isMatchRootClass(CtClass cc) {
+  private boolean isMatchChildOf(CtClass cc, Map<String, CtClass> classMap) {
+    if (getChildOf() == null) {
+      return true;
+    }
+
+    String parentAssignedName = getChildOf();
+    CtClass parentClass = classMap.get(parentAssignedName);
+    String parentName = parentClass.getName();
+
+    try {
+      cc = cc.getSuperclass();
+    } catch (NotFoundException e) {
+      e.printStackTrace();
+      return false;
+    }
+
+    while (cc != null) {
+      if (cc.getName().equals(parentName)) {
+        return true;
+      }
+      try {
+        cc = cc.getSuperclass();
+      } catch (NotFoundException e) {
+        e.printStackTrace();
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  private boolean isMatchRootClass(CtClass cc) {
     try {
       String superclassName = cc.getSuperclass().getName();
       if (!isRootClass() && superclassName.equals("java.lang.Object")) {
@@ -47,7 +83,11 @@ public class Matching {
     return true;
   }
 
-  public boolean isMatchFields(CtClass cc) {
+  private boolean isMatchFields(CtClass cc) {
+    if (getFields() == null) {
+      return true;
+    }
+
     List<CtField> usedFields = new ArrayList<>();
 
     for (String hookField : getFields()) {
@@ -80,10 +120,14 @@ public class Matching {
     return true;
   }
 
-  public boolean isMatchMethods(CtClass cc, Map<String, CtMethod> methodMap) {
+  private boolean isMatchMethods(CtClass cc, Map<String, CtMethod> methodMap) {
+    if (getMethods() == null) {
+      return true;
+    }
+
     List<CtMethod> usedMethods = new ArrayList<>();
 
-    for (HookMethod hookMethod : methods) {
+    for (HookMethod hookMethod : getMethods()) {
       boolean foundMatch = false;
       for (CtMethod method : cc.getDeclaredMethods()) {
         if (!usedMethods.contains(method) && hookMethod.isMatch(method)) {

@@ -2,11 +2,19 @@ package net.rspslite.rsps;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.function.Consumer;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.applet.Applet;
+import javassist.CtClass;
 import net.rspslite.injector.JarInjector;
 import net.rspslite.localstorage.LocalStorage;
+import net.rspslite.rsps.hooks.HookReader;
+import net.rspslite.rsps.hooks.Hook;
 
 public class RSPSClient {
 
@@ -77,11 +85,21 @@ public class RSPSClient {
       URL[] osrsJars = toUrls(osrsInjectedClientJarPath, osrsJarDependencies);
       URL[] rspsJars = toUrls(rspsClientJarPath, rspsJarDependencies);
 
-      JarInjector.inject(rspsClientJarPath,
-                         rspsInjectedClientJarPath,
-                         RSPSClientInjector.getInjectors(osrsInjectedClientJarPath, osrsJars, rspsClientJarPath, rspsJars),
-                         rspsJarDependencies,
-                         (name) -> false);
+     Hook[] hooks = HookReader.readHooks();
+     Map<String, CtClass> classMap = new HashMap<>();
+     List<Map<String, Consumer<CtClass>>> injectors = new ArrayList<>();
+
+     injectors.add(RSPSClientInjector.getInjectors(osrsInjectedClientJarPath, osrsJars, rspsClientJarPath, rspsJars));
+
+     for (int i = 0; i < hooks.length; i++) {
+       injectors.add(RSPSClientInjector.getHookInjector(hooks[i], classMap));
+     }
+
+     JarInjector.inject(rspsClientJarPath,
+                        rspsInjectedClientJarPath,
+                        injectors,
+                        rspsJarDependencies,
+                        (name) -> false);
     }
     catch (IOException e) {
       System.err.println("RSPS client could not be injected");

@@ -94,5 +94,23 @@
         "public void onUnlink() { }"
       ]
     }
+  },
+  {
+    "name": "RSCacheableNode",
+    "matching": {
+      "childOf": "RSNode",
+      "fields": ["$$thisClass$$ next", "$$thisClass$$ prev", "long hash"],
+      "methods": [
+        {
+          "signature": "void D()",
+          "bytecode": [
+            ["aload_0", "getfield", "ifnull"]
+          ]
+        }
+      ]
+    },
+    "injections": {
+      "interfaces": ["net.runelite.rs.api.RSCacheableNode"]
+    }
   }
 ]

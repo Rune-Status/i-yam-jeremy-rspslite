@@ -28,22 +28,20 @@ import net.rspslite.rsps.hooks.Hook;
 
 public class RSPSClientInjector {
 
+  public static Map<String, Consumer<CtClass>> getHookInjector(Hook hook, Map<String, CtClass> classMap) {
+    Map<String, Consumer<CtClass>> injectors = new HashMap<>();
+
+    injectors.put("*", (cc) -> {
+      cc.defrost();
+      hook.tryApplyTo(cc, classMap);
+    });
+
+    return injectors;
+  }
+
   public static Map<String, Consumer<CtClass>> getInjectors(String osrsInjectedClientJarPath, URL[] osrsJars, String rspsClientJarPath, URL[] rspsJars) {
 
     Map<String, Consumer<CtClass>> injectors = new HashMap<>();
-
-    //try { findNPCClass(rspsClientJarPath, rspsJars); } catch (IOException e) { e.printStackTrace(); }
-
-    final Hook[] hooks = HookReader.readHooks();
-    for (Hook hook : hooks) {
-      System.out.println("Hook interface: " + hook.getInjections().getInterfaces()[0]);
-    }
-
-    injectors.put("*", (cc) -> {
-      for (Hook hook : hooks) {
-        hook.tryApplyTo(cc);
-      }
-    });
 
     injectors.put("Alora", (cc) -> {
       try {
