@@ -45,11 +45,11 @@
     ],
     "injections": {
       "interfaces": ["net.runelite.rs.api.RSNodeCache"],
-      "methods": [
+      "newMethods": [
         "public void setCapacity(int n2) { $$field:capacity$$ = n2; }",
         "public void setRemainingCapacity(int n2) { $$field:remainingCapacity$$ = n2; }",
-        "public net.runelite.rs.api.RSCacheableNode get(long l2) { return $$method:get(long)$$(l2); }",
-        "public void reset() { $$method:reset(long)$$(); }"
+        "public net.runelite.rs.api.RSCacheableNode get(long l2) { return $$method:java.lang.Object get(long)$$(l2); }",
+        "public void reset() { $$method:void reset()$$(); }"
       ]
     }
   },
@@ -86,11 +86,11 @@
     ],
     "injections": {
       "interfaces": ["net.runelite.rs.api.RSNode"],
-      "methods": [
+      "newMethods": [
         "public long getHash() { return $$field:hash$$; }",
         "public net.runelite.rs.api.RSNode getNext() { return $$field:next$$; }",
         "public net.runelite.rs.api.RSNode getPrevious() { return $$field:prev$$; }",
-        "public void unlink() { $$method:unlink()$$(); }",
+        "public void unlink() { $$method:void unlink()$$(); }",
         "public void onUnlink() { }"
       ]
     }

@@ -36,10 +36,7 @@ public class Hook {
   public void tryApplyTo(CtClass cc) { // assumes the class is a match
     Map<String, CtMethod> methodMap = new HashMap<>();
     if (isMatch(cc, methodMap)) {
-      for (String interfaceName : getInjections().getInterfaces()) {
-        System.out.print(interfaceName + " ");
-      }
-      System.out.println("-> " + cc.getName());
+      System.out.println(getName() + "-> " + cc.getName());
 
       Map<String, CtField> fieldMap = new HashMap<>();
 
@@ -50,6 +47,8 @@ public class Hook {
       for (String field : fieldMap.keySet()) {
         System.out.println("\t" + field + " -> " + fieldMap.get(field).getName());
       }
+
+      getInjections().apply(cc, methodMap, fieldMap);
     }
   }
 
