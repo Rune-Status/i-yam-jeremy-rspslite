@@ -51,6 +51,9 @@ public class RSPSClient {
   public static Applet getApplet(ClassLoader classLoader) {
     injectClient(OSRS_INJECTED_CLIENT_PATH, OSRS_INJECTED_CLIENT_JAR_DEPENDENCIES, RSPS_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES_FOR_INJECTION, RSPS_INJECTED_CLIENT_JAR_PATH);
 
+    System.err.println("Quitting");
+    System.exit(1);
+
     try {
       URL[] jarUrls = toUrls(RSPS_INJECTED_CLIENT_JAR_PATH, RSPS_CLIENT_JAR_DEPENDENCIES_FOR_CLASSLOADER);
 

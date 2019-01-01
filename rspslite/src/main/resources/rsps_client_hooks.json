@@ -143,5 +143,74 @@
     "injections": {
       "interfaces": ["net.runelite.rs.api.RSItemContainer"]
     }
+  },
+  {
+    "name": "RSSpritePixels",
+    "matching": {
+      "childOf": "RSCacheableNode",
+      "fields": ["int i1", "int i2", "int i3", "int i4", "int i5", "int i6", "int[] g"]
+    },
+    "injections": {
+
+    }
+  },
+  {
+    "name": "RSCombatInfo2",
+    "matching": {
+      "childOf": "RSCacheableNode",
+      "fields": ["int i1", "int i2", "int i3", "int i4", "int i5", "int i6", "int i7"],
+      "constructor": [
+        {
+          "paramTypes": [],
+          "bytecode": [
+            ["aload_0", "ldc", "putfield"],
+            ["aload_0", "iconst_0", "putfield"]
+          ]
+        }
+      ]
+    },
+    "injections": {
+      "interfaces": ["net.runelite.rs.api.RSCombatInfo2"]
+    }
+  },
+  {
+    "name": "RSCombatInfoList",
+    "matching": {
+      "--interfaces": ["java.util.Iterable"],
+      "--fields": ["$$class:RSNode$$ field1", "$$class:RSNode$$ field2"],
+      "methods": [
+        {
+          "signature": "java.util.Iterator t()",
+          "bytecode": []
+        }
+      ]
+    },
+    "injections": {
+      "interfaces": ["net.runelite.rs.api.RSCombatInfoList"]
+    }
+  },
+  {
+    "name": "RSCombatInfoListHolder",
+    "matching": {
+      "childOf": "RSNode",
+      "fields": ["$$class:RSCombatInfo2$$ combatInfo2"]
+    },
+    "fieldFinders": [
+      {
+        "type": "logical_elimination",
+        "field": "combatInfo2"
+      },
+      {
+        "type": "logical_elimination",
+        "field": "combatInfo1"
+      }
+    ],
+    "injections": {
+      "interfaces": ["net.runelite.rs.api.RSCombatInfoListHolder"],
+      "newMethods": [
+        "public net.runelite.rs.api.RSCombatInfoList getCombatInfo1() { return $$field:combatInfo1$$; }",
+        "public net.runelite.rs.api.RSCombatInfo2 getCombatInfo2() { return $$field:combatInfo2$$; }"
+      ]
+    }
   }
 ]

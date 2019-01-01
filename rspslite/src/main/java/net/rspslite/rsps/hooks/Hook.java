@@ -39,7 +39,7 @@ public class Hook {
 
       if (getFieldFinders() != null) {
         for (FieldFinder finder : getFieldFinders()) {
-          finder.find(cc, getMatching().getFields(), methodMap, fieldMap);
+          finder.find(cc, getMatching().getFields(cc, classMap), methodMap, fieldMap);
         }
       }
 

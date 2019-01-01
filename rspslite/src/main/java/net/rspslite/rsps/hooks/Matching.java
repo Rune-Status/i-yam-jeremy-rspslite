@@ -6,12 +6,15 @@ import java.util.Map;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.CtField;
+import javassist.Modifier;
 import javassist.NotFoundException;
 
 public class Matching {
 
   private String childOf;
+  private String[] interfaces;
   private String[] fields;
+  private boolean noAdditionalFields;
   private HookMethod[] methods;
   private HookConstructor[] constructors;
   private boolean isRootClass;
@@ -20,8 +23,42 @@ public class Matching {
     return childOf;
   }
 
-  public String[] getFields() {
-    return fields;
+  public String[] getInterfaces() {
+    return interfaces;
+  }
+
+  public String[] getFields(CtClass cc, Map<String, CtClass> classMap) {
+    if (fields == null) {
+      return null;
+    }
+
+    String[] output = new String[fields.length];
+
+    for (int i = 0; i < fields.length; i++) {
+      String[] splitString = fields[i].split("[\\s]+");
+      String fieldType = splitString[0];
+      String fieldName = splitString[1];
+      if (fieldType.equals("$$thisClass$$")) {
+        fieldType = cc.getName();
+      }
+      else if (fieldType.startsWith("$$class:")) {
+        String name = fieldType.substring("$$class:".length(), fieldType.length() - "$$".length());
+        if (classMap.containsKey(name)) {
+          fieldType = classMap.get(name).getName();
+        }
+        else {
+          throw new RuntimeException("Class " + name + " not in class map at time of $$class:<class_name>$$ usage");
+        }
+      }
+
+      output[i] = fieldType + " " + fieldName;
+    }
+
+    return output;
+  }
+
+  public boolean hasNoAdditionalFields() {
+    return noAdditionalFields;
   }
 
   public HookMethod[] getMethods() {
@@ -38,8 +75,9 @@ public class Matching {
 
   public boolean isMatch(CtClass cc, Map<String, CtClass> classMap, Map<String, CtMethod> methodMap) {
     return isMatchChildOf(cc, classMap) &&
+     isMatchInterfaces(cc) &&
      isMatchRootClass(cc) &&
-     isMatchFields(cc) &&
+     isMatchFields(cc, classMap) &&
      isMatchMethods(cc, methodMap) &&
      isMatchConstructors(cc);
   }
@@ -75,6 +113,33 @@ public class Matching {
     return false;
   }
 
+  private boolean isMatchInterfaces(CtClass cc) {
+    if (getInterfaces() == null) {
+      return true;
+    }
+
+    for (String interfaceName : getInterfaces()) {
+      boolean foundMatch = false;
+      try {
+        for (CtClass interfaceClass : cc.getInterfaces()) {
+          if (interfaceClass.getName().equals(interfaceName)) {
+            foundMatch = true;
+            break;
+          }
+        }
+      } catch (NotFoundException e) {
+        e.printStackTrace();
+        return false;
+      }
+
+      if (!foundMatch) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   private boolean isMatchRootClass(CtClass cc) {
     try {
       String superclassName = cc.getSuperclass().getName();
@@ -92,26 +157,28 @@ public class Matching {
     return true;
   }
 
-  private boolean isMatchFields(CtClass cc) {
-    if (getFields() == null) {
+  private boolean isMatchFields(CtClass cc, Map<String, CtClass> classMap) {
+    String[] hookFields = getFields(cc, classMap);
+    if (hookFields == null) {
       return true;
+    }
+    if (hasNoAdditionalFields() && hookFields.length != cc.getDeclaredFields().length) {
+      return false;
     }
 
     List<CtField> usedFields = new ArrayList<>();
 
-    for (String hookField : getFields()) {
+    for (String hookField : hookFields) {
       String[] splitString = hookField.split("[\\s]+");
       String fieldType = splitString[0];
       String fieldName = splitString[1];
 
-      if (fieldType.equals("$$thisClass$$")) {
-        fieldType = cc.getName();
-      }
-
       boolean foundMatch = false;
       for (CtField field : cc.getDeclaredFields()) {
         try {
-          if (!usedFields.contains(field) && field.getType().getName().equals(fieldType)) {
+          if (!Modifier.isStatic(field.getModifiers()) &&
+              !usedFields.contains(field) &&
+              field.getType().getName().equals(fieldType)) {
             foundMatch = true;
             usedFields.add(field);
             break;
@@ -139,7 +206,9 @@ public class Matching {
     for (HookMethod hookMethod : getMethods()) {
       boolean foundMatch = false;
       for (CtMethod method : cc.getDeclaredMethods()) {
-        if (!usedMethods.contains(method) && hookMethod.isMatch(method)) {
+        if (!Modifier.isStatic(method.getModifiers()) &&
+            !usedMethods.contains(method) &&
+            hookMethod.isMatch(method)) {
           methodMap.put(hookMethod.getSignature(), method);
           foundMatch = true;
           usedMethods.add(method);
